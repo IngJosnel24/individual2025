@@ -7,6 +7,7 @@ import Offcanvas from "react-bootstrap/Offcanvas";
 import logo from "../assets/react.svg";
 import { useAuth } from "../database/authcontext";
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import Pronunciacion from "../views/Pronunciacion";
 import "../App.css";
 
 const Encabezado = () => {
@@ -90,6 +91,13 @@ const Encabezado = () => {
                 className={isCollapsed ? "color-texto-marca" : "text-white"}
               >
                 <strong>Productos</strong>
+              </Nav.Link>
+
+              <Nav.Link
+                onClick={() => handleNavigate ("/pronunciacion")}
+                className={isCollapsed ? "color-texto-marca" : "text-white"}
+              >
+                <strong>Pronuncacion</strong>
               </Nav.Link>
               {isLoggedIn ? (
                 <>

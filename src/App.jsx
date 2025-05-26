@@ -7,6 +7,7 @@ import Inicio from "../src/views/Inicio";
 import Categorias from "../src/views/categorias"; //Importación de Categorias
 import Productos from "../src/views/productos";
 import Catalogo from "../src/views/catalogo";
+import Pronunciacion from "./views/Pronunciacion";
 
 import './App.css'
 
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/inicio" element={<ProtectedRoute element={<Inicio />} />} />
                 <Route path="/categorias" element={<ProtectedRoute element={<Categorias />} />}/> //Ruta de Categorias protegida
                 <Route path="/productos" element={<ProtectedRoute element={<Productos />} />}/>
+                <Route path="/pronunciacion" element={<ProtectedRoute element={<Pronunciacion />} />}/>
                 <Route path="/catalogo" element={<ProtectedRoute element={<Catalogo />} />}/>
 
               </Routes>
@@ -34,4 +36,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
