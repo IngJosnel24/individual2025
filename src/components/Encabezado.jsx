@@ -8,6 +8,7 @@ import logo from "../assets/react.svg";
 import { useAuth } from "../database/authcontext";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import Pronunciacion from "../views/Pronunciacion";
+
 import "../App.css";
 
 const Encabezado = () => {
@@ -106,6 +107,9 @@ const Encabezado = () => {
                 {isCollapsed ? <i className="bi-cloud-sun-fill me-2"></i> : null}
                 <strong>Clima</strong>
 
+              </Nav.Link>
+               <Nav.Link onClick={() => handleNavigate("/estadisticas")} className="text-white">
+                Estadisticas
               </Nav.Link>
 
               {isLoggedIn ? (
