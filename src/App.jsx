@@ -13,6 +13,8 @@ import Estadisticas from "./views/estadisticas";
 
 import './App.css'
 
+
+
 function App() {
 
   return (
@@ -31,6 +33,7 @@ function App() {
                 <Route path="/catalogo" element={<ProtectedRoute element={<Catalogo />} />}/>
                 <Route path="/clima" element={<ProtectedRoute element={<Clima />} />}/>
                 <Route path="/estadisticas" element={<ProtectedRoute element={<Estadisticas />} />}/>
+                
 
               </Routes>
             </main>

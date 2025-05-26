@@ -75,6 +75,7 @@ const Productos = () => {
       }
     );
 
+
     return () => {
       unsubscribeProductos();
       unsubscribeCategorias();
@@ -195,6 +196,20 @@ const Productos = () => {
       alert("Error al eliminar el producto: " + error.message);
     }
   };
+
+      // Método para copiar datos al portapapeles
+    const handleCopy = (producto) => {
+      const rowData = `Nombre: ${producto.nombre}\nPrecio: C$${producto.precio}\nCategoría: ${producto.categoria}`;
+
+      navigator.clipboard
+        .writeText(rowData)
+        .then(() => {
+          console.log("Datos de la fila copiados al portapapeles:\n" + rowData);
+        })
+        .catch((err) => {
+          console.error("Error al copiar al portapapeles:", err);
+        });
+    };
   
   // Lógica de paginación
   const paginatedProductos = productos.slice(
@@ -209,13 +224,17 @@ const Productos = () => {
       <Button className="mb-3" onClick={() => setShowModal(true)}>
         Agregar producto
       </Button>
+      
+
 
       {/* Tabla con productos paginados */}
       <TablaProductos
         productos={paginatedProductos}
         openEditModal={openEditModal}
         openDeleteModal={openDeleteModal}
+        handleCopy={handleCopy}
       />
+      
 
       {/* Componente de paginación */}
       <Paginacion
@@ -224,6 +243,8 @@ const Productos = () => {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
       />
+
+      
 
       {/* Modales */}
       <ModalRegistroProducto
@@ -249,6 +270,8 @@ const Productos = () => {
         setShowDeleteModal={setShowDeleteModal}
         handleDeleteProducto={handleDeleteProducto}
       />
+      
+      
     </Container>
   );
 };

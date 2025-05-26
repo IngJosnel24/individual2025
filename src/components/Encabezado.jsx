@@ -7,7 +7,6 @@ import Offcanvas from "react-bootstrap/Offcanvas";
 import logo from "../assets/react.svg";
 import { useAuth } from "../database/authcontext";
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import Pronunciacion from "../views/Pronunciacion";
 
 import "../App.css";
 
