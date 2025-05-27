@@ -17,7 +17,7 @@ import ModalRegistroProducto from "../components/productos/modalRegistroProducto
 import ModalEdicionProducto from "../components/productos/modalEdicionProducto";
 import ModalEliminacionProducto from "../components/productos/modalEliminacionProducto";
 import Paginacion from "../components/ordenamiento/Paginacion";
-import ModalQR from "../components/qr/ModalQR";
+import ModalQR from "../components/qr/modalQR";
 
 const Productos = () => {
   // Estados
