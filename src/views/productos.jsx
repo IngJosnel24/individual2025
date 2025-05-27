@@ -19,8 +19,9 @@ import ModalEliminacionProducto from "../components/productos/modalEliminacionPr
 import Paginacion from "../components/ordenamiento/Paginacion";
 import ModalQR from "../components/qr/modalQR";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import autoTable from "jspdf-autotable";;
 import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const Productos = () => {
   const [productos, setProductos] = useState([]);
