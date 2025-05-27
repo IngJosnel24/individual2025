@@ -2,7 +2,13 @@ import React from "react";
 import { Table, Button, Image } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-const TablaProductos = ({ productos, openEditModal, openDeleteModal }) => {
+const TablaProductos = ({ 
+  productos, 
+  openEditModal, 
+  openDeleteModal,
+  openQRModal,
+  handleCopy  
+}) => {
   return (
     <Table striped bordered hover responsive>
       <thead>
@@ -11,6 +17,7 @@ const TablaProductos = ({ productos, openEditModal, openDeleteModal }) => {
           <th>Nombre</th>
           <th>Precio</th>
           <th>Categoría</th>
+          <th>PDF</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -25,7 +32,31 @@ const TablaProductos = ({ productos, openEditModal, openDeleteModal }) => {
             <td>{producto.nombre}</td>
             <td>C${producto.precio}</td>
             <td>{producto.categoria}</td>
+           <td className="d-flex flex-column align-items-start">
+  {producto.pdfUrl ? (
+    <>
+      <a href={producto.pdfUrl} target="_blank" rel="noopener noreferrer" className="mb-1">
+        Ver PDF
+      </a>
+      <Button
+        variant="outline-dark"
+        size="sm"
+        onClick={() => {
+          console.log("URL del PDF:", producto.pdfUrl);
+          openQRModal(producto.pdfUrl);
+        }}
+      >
+        <i className="bi bi-qr-code"></i> QR
+      </Button>
+    </>
+  ) : (
+    <span className="text-muted">No disponible</span>
+  )}
+</td>
+
+
             <td>
+               
               <Button
                 variant="outline-warning"
                 size="sm"
@@ -45,9 +76,12 @@ const TablaProductos = ({ productos, openEditModal, openDeleteModal }) => {
                 variant="outline-info"
                 size="sm"
                 onClick={() => handleCopy(producto)}
+                className="me-2"
               >
                 <i className="bi bi-clipboard"></i>
               </Button>
+              
+    
             </td>
           </tr>
         ))}

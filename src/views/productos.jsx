@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Button } from "react-bootstrap";
 import { db } from "../database/firebaseconfig";
+import QRCode from "react-qr-code";
 import {
   collection,
   getDocs,
@@ -16,6 +17,7 @@ import ModalRegistroProducto from "../components/productos/modalRegistroProducto
 import ModalEdicionProducto from "../components/productos/modalEdicionProducto";
 import ModalEliminacionProducto from "../components/productos/modalEliminacionProducto";
 import Paginacion from "../components/ordenamiento/Paginacion";
+import ModalQR from "../components/qr/ModalQR";
 
 const Productos = () => {
   // Estados
@@ -32,6 +34,8 @@ const Productos = () => {
   });
   const [productoEditado, setProductoEditado] = useState(null);
   const [productoAEliminar, setProductoAEliminar] = useState(null);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [selectedUrl, setSelectedUrl] = useState("");
 
   // Estado para paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,6 +44,17 @@ const Productos = () => {
   // Referencias
   const productosCollection = collection(db, "productos");
   const categoriasCollection = collection(db, "categorias");
+
+  //Definir metodo de cierre y apertura
+  const openQRModal = (url) => {
+    setSelectedUrl(url);
+    setShowQRModal(true);
+  }
+
+  const handleCloseQRModal = () => {
+    setShowQRModal(false);
+    setSelectedUrl("");
+  }
 
   // Obtener productos y categorías
   const fetchData = () => {
@@ -198,24 +213,30 @@ const Productos = () => {
   };
 
       // Método para copiar datos al portapapeles
-    const handleCopy = (producto) => {
-      const rowData = `Nombre: ${producto.nombre}\nPrecio: C$${producto.precio}\nCategoría: ${producto.categoria}`;
+        const handleCopy = (producto) => {
+          const rowData = `Nombre: ${producto.nombre}
+        Precio: C$${producto.precio}
+        Categoría: ${producto.categoria}`;
 
-      navigator.clipboard
-        .writeText(rowData)
-        .then(() => {
-          console.log("Datos de la fila copiados al portapapeles:\n" + rowData);
-        })
-        .catch((err) => {
-          console.error("Error al copiar al portapapeles:", err);
-        });
-    };
+          navigator.clipboard
+            .writeText(rowData)
+            .then(() => {
+              alert("Datos copiados al portapapeles");
+            })
+            .catch((err) => {
+              console.error("Error al copiar:", err);
+              alert("Error al copiar. Revisa permisos del navegador.");
+            });
+        };
   
   // Lógica de paginación
   const paginatedProductos = productos.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  
+
 
   return (
     <Container className="mt-5">
@@ -233,8 +254,13 @@ const Productos = () => {
         openEditModal={openEditModal}
         openDeleteModal={openDeleteModal}
         handleCopy={handleCopy}
+        openQRModal={openQRModal}
       />
-      
+      <ModalQR
+        show={showQRModal}
+        handleClose={handleCloseQRModal}
+        url={selectedUrl}
+      />
 
       {/* Componente de paginación */}
       <Paginacion
@@ -243,9 +269,7 @@ const Productos = () => {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
       />
-
       
-
       {/* Modales */}
       <ModalRegistroProducto
         showModal={showModal}
@@ -270,6 +294,9 @@ const Productos = () => {
         setShowDeleteModal={setShowDeleteModal}
         handleDeleteProducto={handleDeleteProducto}
       />
+
+      
+      
       
       
     </Container>
