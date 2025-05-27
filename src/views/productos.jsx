@@ -1,6 +1,6 @@
 // Importaciones
 import React, { useState, useEffect } from "react";
-import { Container, Button } from "react-bootstrap";
+import { Container, Button, Col, Row } from "react-bootstrap";
 import { db } from "../database/firebaseconfig";
 import QRCode from "react-qr-code";
 import {
@@ -18,9 +18,11 @@ import ModalEdicionProducto from "../components/productos/modalEdicionProducto";
 import ModalEliminacionProducto from "../components/productos/modalEliminacionProducto";
 import Paginacion from "../components/ordenamiento/Paginacion";
 import ModalQR from "../components/qr/modalQR";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const Productos = () => {
-  // Estados
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -37,28 +39,23 @@ const Productos = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState("");
 
-  // Estado para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Referencias
   const productosCollection = collection(db, "productos");
   const categoriasCollection = collection(db, "categorias");
 
-  //Definir metodo de cierre y apertura
   const openQRModal = (url) => {
     setSelectedUrl(url);
     setShowQRModal(true);
-  }
+  };
 
   const handleCloseQRModal = () => {
     setShowQRModal(false);
     setSelectedUrl("");
-  }
+  };
 
-  // Obtener productos y categorías
   const fetchData = () => {
-    // Escuchar productos
     const unsubscribeProductos = onSnapshot(
       productosCollection,
       (snapshot) => {
@@ -68,13 +65,9 @@ const Productos = () => {
         }));
         setProductos(fetchedProductos);
       },
-      (error) => {
-        console.error("Error al escuchar productos:", error);
-        alert("Error al cargar productos: " + error.message);
-      }
+      (error) => alert("Error al cargar productos: " + error.message)
     );
 
-    // Escuchar categorías
     const unsubscribeCategorias = onSnapshot(
       categoriasCollection,
       (snapshot) => {
@@ -84,12 +77,8 @@ const Productos = () => {
         }));
         setCategorias(fetchedCategorias);
       },
-      (error) => {
-        console.error("Error al escuchar categorías:", error);
-        alert("Error al cargar categorías: " + error.message);
-      }
+      (error) => alert("Error al cargar categorías: " + error.message)
     );
-
 
     return () => {
       unsubscribeProductos();
@@ -97,7 +86,6 @@ const Productos = () => {
     };
   };
 
-  // useEffect para cargar datos al montar el componente
   useEffect(() => {
     const unsubscribe = fetchData();
     return () => {
@@ -105,7 +93,6 @@ const Productos = () => {
     };
   }, []);
 
-  // Manejadores de inputs
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNuevoProducto((prev) => ({ ...prev, [name]: value }));
@@ -139,11 +126,7 @@ const Productos = () => {
   };
 
   const handleAddProducto = async () => {
-    if (
-      !nuevoProducto.nombre ||
-      !nuevoProducto.precio ||
-      !nuevoProducto.categoria
-    ) {
+    if (!nuevoProducto.nombre || !nuevoProducto.precio || !nuevoProducto.categoria) {
       alert("Por favor, completa todos los campos requeridos.");
       return;
     }
@@ -152,7 +135,7 @@ const Productos = () => {
       setShowModal(false);
       setNuevoProducto({ nombre: "", precio: "", categoria: "", imagen: "" });
     } catch (error) {
-      console.error("Error al agregar producto:", error);
+      alert("Error al agregar producto: " + error.message);
     }
   };
 
@@ -166,11 +149,7 @@ const Productos = () => {
       alert("Por favor, completa todos los campos, incluyendo la imagen.");
       return;
     }
-
-    setShowEditModal(false);
-
     const productoRef = doc(db, "productos", productoEditado.id);
-
     try {
       await updateDoc(productoRef, {
         nombre: productoEditado.nombre,
@@ -178,9 +157,9 @@ const Productos = () => {
         categoria: productoEditado.categoria,
         imagen: productoEditado.imagen,
       });
+      setShowEditModal(false);
     } catch (error) {
-      console.error("Error al actualizar el producto:", error);
-      alert("Error al actualizar el producto: " + error.message);
+      alert("Error al actualizar producto: " + error.message);
     }
   };
 
@@ -195,82 +174,157 @@ const Productos = () => {
   };
 
   const handleDeleteProducto = async () => {
-    if (!productoAEliminar) {
-      alert("No se ha seleccionado un producto para eliminar.");
-      return;
-    }
-  
+    if (!productoAEliminar) return;
     try {
       const productoRef = doc(db, "productos", productoAEliminar.id);
       await deleteDoc(productoRef);
-  
-      setShowDeleteModal(false);  // Cierra el modal después de eliminar
-      setProductoAEliminar(null); // Limpia el producto seleccionado
+      setShowDeleteModal(false);
+      setProductoAEliminar(null);
     } catch (error) {
-      console.error("Error al eliminar el producto:", error);
       alert("Error al eliminar el producto: " + error.message);
     }
   };
 
-      // Método para copiar datos al portapapeles
-        const handleCopy = (producto) => {
-          const rowData = `Nombre: ${producto.nombre}
-        Precio: C$${producto.precio}
-        Categoría: ${producto.categoria}`;
+  const handleCopy = (producto) => {
+    const rowData = `Nombre: ${producto.nombre}\nPrecio: C$${producto.precio}\nCategoría: ${producto.categoria}`;
+    navigator.clipboard
+      .writeText(rowData)
+      .then(() => alert("Datos copiados al portapapeles"))
+      .catch((err) => alert("Error al copiar: " + err));
+  };
 
-          navigator.clipboard
-            .writeText(rowData)
-            .then(() => {
-              alert("Datos copiados al portapapeles");
-            })
-            .catch((err) => {
-              console.error("Error al copiar:", err);
-              alert("Error al copiar. Revisa permisos del navegador.");
-            });
-        };
-  
-  // Lógica de paginación
   const paginatedProductos = productos.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  
+  const generarPDFProductos = () => {
+    const doc = new jsPDF();
+    doc.setFillColor(28, 51, 51);
+    doc.rect(0, 0, 220, 30, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.text("Lista de Productos", doc.internal.pageSize.getWidth() / 2, 18, { align: "center" });
 
+    const columnas = ["#", "Nombre", "Precio", "Categoría"];
+    const filas = productos.map((producto, index) => [
+      index + 1,
+      producto.nombre,
+      `C$ ${producto.precio}`,
+      producto.categoria,
+    ]);
+
+    autoTable(doc, {
+      head: [columnas],
+      body: filas,
+      startY: 40,
+      theme: "grid",
+      styles: { fontSize: 10, cellPadding: 2 },
+      margin: { top: 20, left: 14, right: 14 },
+      didDrawPage: function () {
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageNumber = doc.internal.getNumberOfPages();
+        const totalPagesExp = "{total_pages_count_string}";
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Página ${pageNumber} de ${totalPagesExp}`, pageWidth / 2, pageHeight - 10, {
+          align: "center",
+        });
+      },
+    });
+
+    if (typeof doc.putTotalPages === "function") {
+      doc.putTotalPages("{total_pages_count_string}");
+    }
+
+    const fecha = new Date();
+    const nombreArchivo = `productos_${fecha.getDate()}${fecha.getMonth() + 1}${fecha.getFullYear()}.pdf`;
+    doc.save(nombreArchivo);
+  };
+
+  const exportarExcelProductos = () => {
+    const datos = productos.map((producto, index) => ({
+      "#": index + 1,
+      Nombre: producto.nombre,
+      Precio: producto.precio,
+      Categoría: producto.categoria,
+    }));
+
+    const hoja = XLSX.utils.json_to_sheet(datos);
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, "Productos");
+
+    const fecha = new Date();
+    const nombreArchivo = `productos_${fecha.getDate()}${fecha.getMonth() + 1}${fecha.getFullYear()}.xlsx`;
+
+    XLSX.writeFile(libro, nombreArchivo);
+  };
+
+  const generarPDFDetalleProducto = (producto) => {
+    const doc = new jsPDF();
+    doc.setFillColor(40, 60, 80);
+    doc.rect(0, 0, 220, 30, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.text("Detalle del Producto", doc.internal.pageSize.getWidth() / 2, 18, { align: "center" });
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.text(`Nombre: ${producto.nombre}`, 20, 50);
+    doc.text(`Precio: C$ ${producto.precio}`, 20, 60);
+    doc.text(`Categoría: ${producto.categoria}`, 20, 70);
+
+    if (producto.imagen) {
+      try {
+        doc.addImage(producto.imagen, "JPEG", 20, 80, 60, 60);
+      } catch (error) {
+        doc.text("No se pudo cargar la imagen.", 20, 85);
+      }
+    } else {
+      doc.text("Este producto no tiene imagen asociada.", 20, 85);
+    }
+
+    const fecha = new Date();
+    const nombreArchivo = `detalle_producto_${producto.nombre}_${fecha.getDate()}${fecha.getMonth() + 1}${fecha.getFullYear()}.pdf`;
+
+    doc.save(nombreArchivo);
+  };
 
   return (
     <Container className="mt-5">
-      <br />
       <h4>Gestión de Productos</h4>
-      <Button className="mb-3" onClick={() => setShowModal(true)}>
-        Agregar producto
-      </Button>
-      
+      <Row className="mb-3">
+        <Col lg={3}>
+          <Button onClick={() => setShowModal(true)}>Agregar producto</Button>
+        </Col>
+        <Col lg={3}>
+          <Button variant="secondary" onClick={generarPDFProductos} style={{ width: "100%" }}>
+            Generar reporte PDF
+          </Button>
+        </Col>
+        <Col lg={3}>
+          <Button variant="success" onClick={exportarExcelProductos} style={{ width: "100%" }}>
+            Generar Excel
+          </Button>
+        </Col>
+      </Row>
 
-
-      {/* Tabla con productos paginados */}
       <TablaProductos
         productos={paginatedProductos}
         openEditModal={openEditModal}
         openDeleteModal={openDeleteModal}
         handleCopy={handleCopy}
         openQRModal={openQRModal}
+        generarPDFDetalleProducto={generarPDFDetalleProducto}
       />
-      <ModalQR
-        show={showQRModal}
-        handleClose={handleCloseQRModal}
-        url={selectedUrl}
-      />
-
-      {/* Componente de paginación */}
+      <ModalQR show={showQRModal} handleClose={handleCloseQRModal} url={selectedUrl} />
       <Paginacion
         itemsPerPage={itemsPerPage}
         totalItems={productos.length}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
       />
-      
-      {/* Modales */}
       <ModalRegistroProducto
         showModal={showModal}
         setShowModal={setShowModal}
@@ -294,11 +348,6 @@ const Productos = () => {
         setShowDeleteModal={setShowDeleteModal}
         handleDeleteProducto={handleDeleteProducto}
       />
-
-      
-      
-      
-      
     </Container>
   );
 };
