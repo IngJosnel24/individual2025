@@ -1,6 +1,6 @@
 // Importaciones
 import React, { useState, useEffect } from "react";
-import { Container, Button } from "react-bootstrap";
+import { Container, Button, Col } from "react-bootstrap";
 import { db } from "../database/firebaseconfig";
 import {
   collection,
@@ -17,6 +17,7 @@ import TablaCategorias from "../components/categorias/tablacategoria";
 import ModalRegistroCategoria from "../components/categorias/modalRegistroCategoria";
 import ModalEdicionCategoria from "../components/categorias/modalEdicionCategoria";
 import ModalEliminacionCategoria from "../components/categorias/modalEliminacionCategoria";
+import ChatIA from "../components/chat/ChatIA";
 
 
 const Categorias = () => {
@@ -32,6 +33,7 @@ const Categorias = () => {
   });
   const [categoriaEditada, setCategoriaEditada] = useState(null);
   const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);
+   const [showChatModal, setShowChatModal] = useState(false);
 
   // Referencia a la colección de categorías en Firestore
   const categoriasCollection = collection(db, "categorias");
@@ -245,6 +247,8 @@ const Categorias = () => {
       <Button className="mb-3" onClick={() => setShowModal(true)}>
         Agregar categoría
       </Button>
+     
+
       <TablaCategorias
         categorias={categorias}
         openEditModal={openEditModal}
@@ -269,6 +273,10 @@ const Categorias = () => {
         setShowDeleteModal={setShowDeleteModal}
         handleDeleteCategoria={handleDeleteCategoria}
       />
+
+      {showChatModal && (
+        <ChatIA show={showChatModal} onHide={() => setShowChatModal(false)} />
+      )}
     </Container>
   );
 };
