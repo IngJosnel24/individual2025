@@ -102,7 +102,7 @@ const Inicio = () => {
               className="shadow-sm"
             >
               <i className="bi bi-download me-2"></i>
-              Instalar App Ferretería Duarte
+              Instalar App Ferretería López
             </Button>
             <p className="text-muted small mt-2">
               Instala esta aplicación en tu dispositivo para un acceso más rápido
